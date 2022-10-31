@@ -1,42 +1,63 @@
 import discord
 import os
-import search_runpee # search class we will impelement later
+import random
+from dotenv import load_dotenv
+from discord.ext import commands
+from random import randrange
+
 import pandas as pd
-from dotenv import load_dotenv
+
+
+csv = pd.read_csv('./startupnation_articles.csv')
+
+df = pd.DataFrame(csv, columns=['title','url','tag'])
+#print(df['title'][0])
+
 
 load_dotenv()
-
-df = read_csv("../Scraper/startupnation_articles.csv")
-'''
-# If you are coding the bot on a local machine, use the python-dotenv pakcage to get variables stored in .env file of your project
-from dotenv import load_dotenv
-load_dotenv()
-'''
-
-# instantiate discord client 
-client = discord.Client()
-
-# discord event to check when the bot is online 
-@client.event
-async def on_ready():
-  print(f'{client.user} is now online!')
-
-@client.event
-async def on_message(message): 
-  # make sure bot doesn't respond to it's own messages to avoid infinite loop
-  if message.author == client.user:
-      return  
-  # lower case message
-  message_content = message.content.lower()  
   
-  if message.content.startswith(f'$hello'):
-    await message.channel.send('''Hello there! I\'m the fidgeting bot from RunPee. 
-    Sorry but I really need to go to the bathroom... Please read my manual by typing $help or $commands while I'm away.''')
+#client = discord.Client(intents=discord.Intents.all())
+token = os.getenv('TOKEN')
 
-  if f'$search' in message_content:
-        await message.channel.send(df['url'][0])
+bot = commands.Bot(intents=discord.Intents.all(), command_prefix='$')
+
+@bot.event
+async def on_ready():
+	print("Logged in as a bot")
 
 
-# get bot token from .env and run client
-# has to be at the end of the file
-client.run(os.getenv('TOKEN'))
+@bot.command()
+async def startup(ctx, *args):
+	arguments = ', '.join(args)
+	embed = discord.Embed(title="startup nation", url=str(df['url'][0]), description='test article')
+	embed.set_image(url="https://c0.wallpaperflare.com/preview/299/790/569/business-laptop-office-computer.jpg")
+	#embed.description = (url=df['url'][0])
+	await ctx.send(df['title'][0], embed=embed)
+	'''
+	username = str(message.author).split("#")[0]
+	channel = str(message.channel.name)
+	user_message = str(message.content)
+
+
+	print('message = ',user_message, '')
+	if message.author == client.user:
+		return
+
+		if user_message.strip() == "eticoncept" :
+      #await message.channel.send(f'Hello {username}')
+			await channel.send(df['title'][0])
+			return
+		elif user_message.strip() == "bye":
+			await channel.send(f'Bye {username}')
+		elif user_message.lower() == "tell me a joke":
+			jokes = [" Can someone please shed more\
+			light on how my lamp got stolen?",
+					"Why is she called llene? She\
+					stands on equal legs.",
+					"What do you call a gazelle in a \
+					lions territory? Denzel."]
+			await message.channel.send(random.choice(jokes))
+
+'''
+	
+bot.run(token)
